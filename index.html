@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留白事務所 | 網頁設計 - 為您的時間留白</title>
+    <meta name="description" content="專為忙碌老闆打造的全託管網頁設計服務。建置$6,800，月維護$2,800。您專注賺錢，網站雜事交給我們。">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-white: #FFFFFF;
+            --color-black: #0a0a0a;
+            --color-gray-100: #f5f5f5;
+            --color-gray-200: #e5e5e5;
+            --color-gray-300: #d4d4d4;
+            --color-gray-800: #262626;
+            --color-navy: #1e3a5f;
+            --color-navy-light: #2d5580;
+            
+            --font-display: 'Cormorant Garamond', 'Noto Serif TC', serif;
+            --font-sans: 'DM Sans', system-ui, sans-serif;
+            --font-zh: 'Noto Serif TC', serif;
+            
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 4rem;
+            --spacing-xl: 6rem;
+            --spacing-2xl: 10rem;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-white);
+            color: var(--color-black);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-zh);
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: 0.02em;
+        }
+        
+        .serif {
+            font-family: var(--font-display);
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--color-white);
+            border-bottom: 1px solid var(--color-gray-200);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+        
+        nav.scrolled {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            font-family: var(--font-zh);
+            color: var(--color-black);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-md);
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--color-black);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--color-navy);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            position: relative;
+            background: var(--color-white);
+        }
+        
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+            animation: fadeInUp 1.2s ease;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.9rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--color-navy);
+            margin-bottom: var(--spacing-md);
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 1s ease 0.3s forwards;
+        }
+        
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 7rem);
+            margin-bottom: var(--spacing-md);
+            opacity: 0;
+            animation: fadeIn 1s ease 0.6s forwards;
+        }
+        
+        .hero-tagline {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            color: var(--color-gray-800);
+            margin-bottom: var(--spacing-lg);
+            font-weight: 300;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            animation: fadeIn 1s ease 0.9s forwards;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--color-gray-800);
+            max-width: 600px;
+            margin: 0 auto var(--spacing-lg);
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.2s forwards;
+        }
+        
+        .cta-container {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0;
+            transition: all 0.4s ease;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-primary {
+            background: var(--color-navy);
+            color: var(--color-white);
+            border: 2px solid var(--color-navy);
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--color-black);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+        
+        .btn-primary:hover::before {
+            left: 0;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-black);
+            border: 2px solid var(--color-black);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--color-black);
+            color: var(--color-white);
+        }
+        
+        /* Pain Points Section */
+        .pain-points {
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            background: var(--color-black);
+            color: var(--color-white);
+        }
+        
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--color-gray-300);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .pain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .pain-item {
+            padding: var(--spacing-lg);
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--color-navy);
+            transition: all 0.3s ease;
+        }
+        
+        .pain-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(10px);
+        }
+        
+        .pain-number {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--color-navy);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .pain-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+        
+        .pain-item p {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            background: var(--color-gray-100);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .feature-card {
+            background: var(--color-white);
+            padding: var(--spacing-lg);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 0;
+            background: var(--color-navy);
+            transition: height 0.4s ease;
+        }
+        
+        .feature-card:hover::before {
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--color-navy);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 900;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            color: var(--color-gray-800);
+            line-height: 1.8;
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            background: var(--color-white);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .pricing-card {
+            background: var(--color-white);
+            border: 2px solid var(--color-gray-200);
+            padding: var(--spacing-lg);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+        
+        .pricing-card.featured {
+            border-color: var(--color-navy);
+            background: var(--color-black);
+            color: var(--color-white);
+            transform: scale(1.05);
+        }
+        
+        .pricing-card:hover {
+            border-color: var(--color-navy);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .pricing-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-navy);
+            color: var(--color-white);
+            padding: 0.5rem 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: var(--spacing-sm);
+            text-align: center;
+        }
+        
+        .pricing-amount {
+            text-align: center;
+            margin: var(--spacing-md) 0;
+        }
+        
+        .price-main {
+            font-size: 3.5rem;
+            font-weight: 900;
+            font-family: var(--font-display);
+        }
+        
+        .price-period {
+            font-size: 1rem;
+            color: var(--color-gray-800);
+        }
+        
+        .pricing-card.featured .price-period {
+            color: var(--color-gray-300);
+        }
+        
+        .price-setup {
+            text-align: center;
+            font-size: 1rem;
+            color: var(--color-gray-800);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .pricing-card.featured .price-setup {
+            color: var(--color-gray-300);
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: var(--spacing-md) 0;
+            padding: var(--spacing-md) 0;
+            border-top: 1px solid var(--color-gray-200);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        
+        .pricing-card.featured .pricing-features {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .pricing-features li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--color-navy);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .pricing-card.featured .pricing-features li::before {
+            color: var(--color-white);
+        }
+        
+        .pricing-cta {
+            margin-top: var(--spacing-md);
+            text-align: center;
+        }
+        
+        /* FAQ Section */
+        .faq {
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            background: var(--color-gray-100);
+        }
+        
+        .faq-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            background: var(--color-white);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: var(--spacing-md);
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .faq-question:hover {
+            background: var(--color-gray-100);
+        }
+        
+        .faq-toggle {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 var(--spacing-md);
+            color: var(--color-gray-800);
+            line-height: 1.8;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: var(--spacing-md);
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: var(--spacing-2xl) var(--spacing-lg);
+            background: var(--color-navy);
+            color: var(--color-white);
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: var(--spacing-lg);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .btn-white {
+            background: var(--color-white);
+            color: var(--color-navy);
+            border: 2px solid var(--color-white);
+        }
+        
+        .btn-white:hover {
+            background: transparent;
+            color: var(--color-white);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--color-black);
+            color: var(--color-white);
+            padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-md);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .footer-section h4 {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+        
+        .footer-section p,
+        .footer-section a {
+            color: var(--color-gray-300);
+            text-decoration: none;
+            line-height: 2;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-section a:hover {
+            color: var(--color-white);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--spacing-md);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--color-gray-300);
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --spacing-lg: 2rem;
+                --spacing-xl: 3rem;
+                --spacing-2xl: 5rem;
+            }
+            
+            nav {
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero {
+                padding: var(--spacing-xl) var(--spacing-md);
+            }
+            
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+            
+            .pain-grid,
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">留白事務所</a>
+            <ul class="nav-links">
+                <li><a href="#features">服務特色</a></li>
+                <li><a href="#pricing">方案價格</a></li>
+                <li><a href="#faq">常見問題</a></li>
+                <li><a href="https://lin.ee/KaZ8bgl" target="_blank">聯絡我們</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-subtitle">The Blank Office</div>
+            <h1>為您的時間<br>留白</h1>
+            <p class="hero-tagline">專業網站託管，讓老闆專心成交</p>
+            <p class="hero-description">
+                您忙著談生意，網站的事交給我們。從建置、維護到修改，一條龍託管服務，每月不到 $100，聘請專屬的雲端工務部。
+            </p>
+            <div class="cta-container">
+                <a href="https://lin.ee/KaZ8bgl" class="btn btn-primary" target="_blank">立即諮詢方案</a>
+                <a href="#pricing" class="btn btn-secondary">查看價格</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pain Points -->
+    <section class="pain-points">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">老闆的煩惱<br>我們都懂</h2>
+                <p class="section-subtitle">網站不該是負擔，而是您的成交利器</p>
+            </div>
+            <div class="pain-grid">
+                <div class="pain-item reveal">
+                    <div class="pain-number serif">01</div>
+                    <h3>花十幾萬做的網站，從來不會更新</h3>
+                    <p>當初說得天花亂墜,實際上根本沒時間也不會操作後台。結果網站資訊過時,客戶看了就跑。</p>
+                </div>
+                <div class="pain-item reveal">
+                    <div class="pain-number serif">02</div>
+                    <h3>網站出問題，找不到人修</h3>
+                    <p>主機掛了、網域到期、被駭客入侵⋯⋯每次都要自己花時間找人處理，浪費時間又浪費錢。</p>
+                </div>
+                <div class="pain-item reveal">
+                    <div class="pain-number serif">03</div>
+                    <h3>一次性買斷，後續維護像無底洞</h3>
+                    <p>想改個內容要收錢、加個功能要收錢、改個設計又要收錢。每次修改都是一筆額外支出。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">雲端工務部<br>隨時待命</h2>
+                <p class="section-subtitle">不只是做網站，更是您的網路專屬秘書</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon">全</div>
+                    <h3>全託管服務</h3>
+                    <p>從網域註冊、主機管理到SSL憑證，所有技術細節我們全包。您只需專注本業，其他交給我們。</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">快</div>
+                    <h3>快速回應修改</h3>
+                    <p>需要更新內容、調整設計、加入新功能？LINE通知我們，24小時內完成修改，不另外收費。</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">省</div>
+                    <h3>省錢省心省時間</h3>
+                    <p>月費制讓您現金流更健康。所有維護、更新、技術支援都包含在內，不用擔心突如其來的額外費用。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">透明價格<br>清楚方案</h2>
+                <p class="section-subtitle">沒有隱藏費用，沒有複雜合約</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card reveal">
+                    <h3>純建置方案</h3>
+                    <div class="pricing-amount">
+                        <div class="price-main">$9,800</div>
+                    </div>
+                    <div class="price-setup">一次性費用，買斷制</div>
+                    <ul class="pricing-features">
+                        <li>專業網站建置</li>
+                        <li>響應式設計（RWD）</li>
+                        <li>基礎 SEO 設定</li>
+                        <li>無後續維護服務</li>
+                        <li>修改需另外報價</li>
+                    </ul>
+                    <div class="pricing-cta">
+                        <a href="https://lin.ee/KaZ8bgl" class="btn btn-secondary" target="_blank">諮詢方案</a>
+                    </div>
+                </div>
+                
+                <div class="pricing-card featured reveal">
+                    <div class="pricing-badge">最受歡迎</div>
+                    <h3>全託管方案</h3>
+                    <div class="pricing-amount">
+                        <div class="price-main">$2,800</div>
+                        <div class="price-period">/月</div>
+                    </div>
+                    <div class="price-setup">建置費 $6,800（首次）</div>
+                    <ul class="pricing-features">
+                        <li>包含純建置所有內容</li>
+                        <li>網域 + 主機全包</li>
+                        <li>SSL 安全憑證</li>
+                        <li>內容無限次修改</li>
+                        <li>24hr 技術支援</li>
+                        <li>定期備份與維護</li>
+                        <li>效能優化服務</li>
+                    </ul>
+                    <div class="pricing-cta">
+                        <a href="https://lin.ee/KaZ8bgl" class="btn btn-primary" target="_blank">立即開始</a>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: var(--spacing-lg); color: var(--color-gray-800);">
+                <p><strong>全託管方案</strong>每日不到 $100，相當於一杯咖啡的價格，就能擁有專業的網路團隊</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">常見問題</h2>
+                <p class="section-subtitle">您的疑問，我們來解答</p>
+            </div>
+            <div class="faq-container">
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>為什麼要選擇月費制而不是買斷？</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        網站就像汽車一樣，需要定期保養維護。買斷制看似一次付清，但後續的主機費、網域費、SSL憑證、修改費用累積起來往往更貴。月費制讓您的現金流更健康，所有維護、更新、技術支援都包含在內，一天不到$100就能擁有專業團隊隨時待命。
+                    </div>
+                </div>
+                
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>如果我想中途解約怎麼辦？</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        我們提供彈性的合約方案。只需提前一個月告知即可解約，沒有違約金。解約後網站所有權歸您，我們會協助您轉移到其他主機商，確保您的網站持續運作。
+                    </div>
+                </div>
+                
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>修改內容真的不用另外收費嗎？</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        全託管方案內，一般的內容更新、文字修改、圖片替換、頁面調整都不另外收費。只有涉及到大幅度改版（例如全站重新設計、新增複雜功能模組）才會另外報價。我們的原則是：讓您的網站隨時保持最佳狀態。
+                    </div>
+                </div>
+                
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>你們和其他網頁設計公司有什麼不同？</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        我們不是傳統的網頁設計公司，而是「雲端工務部」的概念。傳統公司做完網站就結案，後續維護要另外付費。我們提供的是長期夥伴關係：建置只是開始，我們更重視後續的維護、優化和支援。您不需要懂技術，只要專注本業，網站的事交給我們。
+                    </div>
+                </div>
+                
+                <div class="faq-item reveal">
+                    <div class="faq-question">
+                        <span>建置時間需要多久？</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        一般企業形象網站約 7-14 個工作天完成。時程包含：需求訪談（1-2天）、設計稿確認（3-5天）、程式開發（3-5天）、測試上線（1-2天）。如有特殊需求或急件，我們也提供加速服務。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="section-container">
+            <h2>別讓網站維護<br>吃掉您的成交時間</h2>
+            <p>立即加入 LINE 官方帳號，讓我們為您的網站把關</p>
+            <a href="https://lin.ee/KaZ8bgl" class="btn btn-white" target="_blank">加入 LINE 諮詢</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>留白事務所</h4>
+                <p>專為忙碌老闆打造的<br>全託管網頁設計服務</p>
+                <p style="margin-top: 1rem;">THE BLANK OFFICE</p>
+            </div>
+            <div class="footer-section">
+                <h4>服務項目</h4>
+                <p><a href="#features">網站建置</a></p>
+                <p><a href="#features">網站維護</a></p>
+                <p><a href="#features">技術支援</a></p>
+                <p><a href="#pricing">方案價格</a></p>
+            </div>
+            <div class="footer-section">
+                <h4>聯絡我們</h4>
+                <p><a href="https://lin.ee/KaZ8bgl" target="_blank">LINE 官方帳號</a></p>
+                <p><a href="mailto:info@theblankoffice.tw">info@theblankoffice.tw</a></p>
+                <p>服務時間：週一至週五 09:00-18:00</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 留白事務所 The Blank Office. 為您的時間留白，雜事我們來排。</p>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll reveal animation
+        function reveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+
+        window.addEventListener('scroll', reveal);
+        reveal(); // Trigger on load
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            
+            question.addEventListener('click', () => {
+                // Close other items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
