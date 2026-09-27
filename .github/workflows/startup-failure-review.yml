@@ -1,0 +1,145 @@
+name: Startup failure guide review
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'startup-failure/**'
+      - '.github/workflows/startup-failure-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare browser
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Check published site and create portable copy
+        run: |
+          mkdir -p review-output
+          python - <<'PY'
+          import json, pathlib, shutil, time, urllib.request, zipfile
+          from playwright.sync_api import sync_playwright
+          out = pathlib.Path('review-output')
+          source = pathlib.Path('startup-failure')
+          url = 'https://larryveryhandsome.github.io/web-design/startup-failure/'
+          results = []
+          def check(name, condition, detail=''):
+              results.append({'test': name, 'passed': bool(condition), 'detail': detail})
+              assert condition, name + ': ' + str(detail)
+          try:
+              for name in ['index.html', 'site.css', 'app.js']:
+                  shutil.copy2(source / name, out / name)
+              html = (source / 'index.html').read_text()
+              css = (source / 'site.css').read_text()
+              js = (source / 'app.js').read_text()
+              portable = html.replace('<link rel="stylesheet" href="site.css?v=1">', '<style>' + css + '</style>')
+              portable = portable.replace('<script src="app.js?v=1" defer></script>', '')
+              portable = portable.replace('</body>', '<script>' + js + '</script></body>')
+              (out / 'taiwan-startup-failure.html').write_text(portable, encoding='utf-8')
+              (out / 'README.txt').write_text('創業失敗圖鑑｜台灣篇\n公開網址：' + url + '\n研究查核日：2026-09-27\n開啟 taiwan-startup-failure.html 可離線閱讀與試算；外部來源仍需要網路。\n來源研究範圍與限制見網頁研究方法段落。\n', encoding='utf-8')
+              with zipfile.ZipFile(out / 'startup-failure-website.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+                  for name in ['index.html', 'site.css', 'app.js', 'taiwan-startup-failure.html', 'README.txt']:
+                      z.write(out / name, name)
+              with sync_playwright() as p:
+                  browser = p.chromium.launch()
+                  context = browser.new_context(viewport={'width': 1440, 'height': 1000}, device_scale_factor=1, reduced_motion='reduce')
+                  page = context.new_page()
+                  errors = []
+                  page.on('pageerror', lambda e: errors.append(str(e)))
+                  response = page.goto(url, wait_until='networkidle', timeout=60000)
+                  check('Public page HTTP 200', response is not None and response.status == 200, response.status if response else None)
+                  page.wait_for_selector('.review-row', timeout=30000)
+                  check('Document title', '創業失敗圖鑑' in page.title())
+                  check('Sources 20', page.locator('.source').count() == 20)
+                  check('Patterns 14', page.locator('.pattern').count() == 14)
+                  check('Checklist 12', page.locator('.review-row').count() == 12)
+                  check('Stylesheet loaded', page.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(247, 245, 238)')
+                  check('Desktop no horizontal overflow', page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
+                  invalid_anchors = page.evaluate("""Array.from(document.querySelectorAll('a[href^="#"]')).filter(a=>!document.getElementById(a.getAttribute('href').slice(1))).map(a=>a.getAttribute('href'))""")
+                  check('Internal anchors resolve', len(invalid_anchors) == 0, invalid_anchors)
+                  page.screenshot(path=str(out / 'desktop.png'))
+                  text = page.locator('#beResult').inner_text()
+                  check('Default break-even calculation', '50 單' in text and '-90,000' in text and '-105,000' in text, text)
+                  page.locator('#orders').fill('21')
+                  check('Over-capacity rejection', '超過交付容量' in page.locator('#beResult').inner_text())
+                  page.locator('#orders').fill('15')
+                  page.locator('#price').fill('7000')
+                  check('Zero unit contribution', '沒有可行單量' in page.locator('#beResult').inner_text())
+                  page.locator('#price').fill('6000')
+                  check('Negative contribution', '增加訂單無法改善' in page.locator('#beResult').inner_text())
+                  page.locator('#price').fill('-1')
+                  check('Negative input validation', '非負數字' in page.locator('#beResult').inner_text())
+                  page.locator('#price').fill('10000')
+                  check('Default cash buffer', '約 6 個月' in page.locator('#cashResult').inner_text())
+                  page.locator('#stressBtn').click()
+                  check('Stress test calculation', '4.6 個月' in page.locator('#stressResult').inner_text())
+                  check('Stress test leaves original input', page.locator('#inflow').input_value() == '100000')
+                  page.locator('#inflow').fill('200000')
+                  check('No net outflow handled', '目前假設無淨流出' in page.locator('#cashResult').inner_text())
+                  page.locator('#cash').fill('0')
+                  check('Zero cash warning', '沒有現金存量緩衝' in page.locator('#cashResult').inner_text())
+                  page.locator('#cash').fill('600000')
+                  page.locator('#inflow').fill('100000')
+                  for kind, total in [('official',4),('essay',2),('social',7),('snippet',7)]:
+                      page.locator('[data-filter="' + kind + '"]').click()
+                      check('Source filter ' + kind, page.locator('.source:visible').count() == total)
+                  page.locator('a[href="#s10"]').first.click()
+                  check('Citation reveals filtered source', page.locator('.source:visible').count() == 20 and page.locator('#s10').is_visible())
+                  page.locator('#review-0').select_option('evidence')
+                  page.locator('#review-1').select_option('gap')
+                  page.reload(wait_until='networkidle')
+                  check('Checklist persistence', page.locator('#review-0').input_value() == 'evidence' and page.locator('#review-1').input_value() == 'gap')
+                  with page.expect_download() as download_info:
+                      page.locator('#exportBtn').click()
+                  download = download_info.value
+                  download.save_as(str(out / 'checklist-test.txt'))
+                  check('Checklist export content', '已有證據' in (out / 'checklist-test.txt').read_text(encoding='utf-8-sig'))
+                  page.once('dialog', lambda d: d.accept())
+                  page.locator('#resetBtn').click()
+                  check('Checklist reset', page.locator('#review-0').input_value() == 'unknown')
+                  page.locator('#expandBtn').click()
+                  check('Expand all', page.locator('.pattern[open]').count() == 14)
+                  page.locator('#expandBtn').click()
+                  check('Collapse all', page.locator('.pattern[open]').count() == 0)
+                  page.evaluate("window.dispatchEvent(new Event('beforeprint'))")
+                  check('Print expands patterns', page.locator('.pattern[open]').count() == 14)
+                  page.evaluate("window.dispatchEvent(new Event('afterprint'))")
+                  check('Print restores state', page.locator('.pattern[open]').count() == 0)
+                  page.locator('#tools').scroll_into_view_if_needed()
+                  page.screenshot(path=str(out / 'desktop-tools.png'))
+                  mobile = browser.new_context(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True,reduced_motion='reduce')
+                  mp = mobile.new_page()
+                  mp.on('pageerror',lambda e: errors.append(str(e)))
+                  mp.goto(url, wait_until='networkidle',timeout=60000)
+                  check('Mobile no horizontal overflow',mp.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
+                  mp.screenshot(path=str(out / 'mobile.png'))
+                  mp.locator('#tools').scroll_into_view_if_needed()
+                  mp.screenshot(path=str(out / 'mobile-tools.png'))
+                  mp.set_viewport_size({'width':320,'height':740})
+                  check('Narrow mobile no overflow',mp.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
+                  mp.locator('#review-2').select_option('evidence')
+                  check('Mobile checklist usable', '1 / 12' in mp.locator('#reviewCount').inner_text())
+                  check('No browser script errors',len(errors)==0,errors)
+                  browser.close()
+          finally:
+              (out / 'test-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
+              print(json.dumps(results,ensure_ascii=False,indent=2))
+          PY
+      - name: Save review output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: startup-failure-review
+          path: review-output/
+          retention-days: 14
