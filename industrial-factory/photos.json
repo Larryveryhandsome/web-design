@@ -2,25 +2,33 @@
   "Y01": {
     "source": "https://buy.yungching.com.tw/house/7502975",
     "photos": [],
-    "note": "source read: HTTPError",
+    "note": "原站圖片目前無法取得可驗證副本；請由原始刊登相簿查看，不用其他標的照片替代。",
     "failed_attempts": 3
   },
   "Y02": {
     "source": "https://buy.yungching.com.tw/house/7076589",
     "photos": [],
-    "note": "source read: HTTPError",
+    "note": "原站圖片目前無法取得可驗證副本；請由原始刊登相簿查看，不用其他標的照片替代。",
     "failed_attempts": 3
   },
   "Y03": {
     "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
     "photos": [
       {
+        "src": "photos/y03-4.webp",
+        "original": "https://upload.iyudigi.com/IHOUSE/039/WL01901722/WL01901722/l66c943c3bd793.webp?a=20260924100515",
+        "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
+        "width": 1280,
+        "height": 960,
+        "caption": "原刊登建物外觀；仍須承辦確認標的與現況。"
+      },
+      {
         "src": "photos/y03-1.webp",
         "original": "https://upload.iyudigi.com/IHOUSE/039/WL01901722/WL01901722/l66c943c26688e.webp?a=20260924100515",
         "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
         "width": 1280,
         "height": 960,
-        "caption": "Y03 原刊登照片 1（拍攝日期、現況與標的對應仍須承辦確認）"
+        "caption": "原刊登道路／周邊照片；不是園區或地籍位置證明。"
       },
       {
         "src": "photos/y03-2.webp",
@@ -28,7 +36,7 @@
         "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
         "width": 1280,
         "height": 960,
-        "caption": "Y03 原刊登照片 2（拍攝日期、現況與標的對應仍須承辦確認）"
+        "caption": "原刊登道路／周邊照片；不是園區或地籍位置證明。"
       },
       {
         "src": "photos/y03-3.webp",
@@ -36,15 +44,7 @@
         "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
         "width": 1280,
         "height": 960,
-        "caption": "Y03 原刊登照片 3（拍攝日期、現況與標的對應仍須承辦確認）"
-      },
-      {
-        "src": "photos/y03-4.webp",
-        "original": "https://upload.iyudigi.com/IHOUSE/039/WL01901722/WL01901722/l66c943c3bd793.webp?a=20260924100515",
-        "source": "https://www.xn--8pr24e9bz5p7pbk9fi3bj6lt4r9u1aje3brb3b.tw/m2/showobj.php?objno=a1791261",
-        "width": 1280,
-        "height": 960,
-        "caption": "Y03 原刊登照片 4（拍攝日期、現況與標的對應仍須承辦確認）"
+        "caption": "原刊登道路／周邊照片；不是園區或地籍位置證明。"
       }
     ],
     "note": "source HTTP 200",
@@ -54,36 +54,12 @@
     "source": "https://business.591.com.tw/sale/20959756",
     "photos": [
       {
-        "src": "photos/m01-1.png",
-        "original": "https://s.591.com.tw/house/100-entry-newhouse.Dw_0wmPG.png",
-        "source": "https://business.591.com.tw/sale/20959756",
-        "width": 452,
-        "height": 378,
-        "caption": "M01 原刊登照片 1（拍攝日期、現況與標的對應仍須承辦確認）"
-      },
-      {
-        "src": "photos/m01-2.png",
-        "original": "https://s.591.com.tw/house/100-entry-sales.Dn-fjsrY.png",
-        "source": "https://business.591.com.tw/sale/20959756",
-        "width": 390,
-        "height": 320,
-        "caption": "M01 原刊登照片 2（拍攝日期、現況與標的對應仍須承辦確認）"
-      },
-      {
-        "src": "photos/m01-3.jpg",
+        "src": "photos/m01-1.jpg",
         "original": "https://img1.591.com.tw/house/2026/07/08/178349271800989903.jpg!1000x.water2.jpg",
         "source": "https://business.591.com.tw/sale/20959756",
         "width": 1000,
         "height": 641,
-        "caption": "M01 原刊登照片 3（拍攝日期、現況與標的對應仍須承辦確認）"
-      },
-      {
-        "src": "photos/m01-4.jpg",
-        "original": "https://img1.591.com.tw/house/2026/07/08/178349271800989903.jpg!730x460.water2.jpg",
-        "source": "https://business.591.com.tw/sale/20959756",
-        "width": 730,
-        "height": 460,
-        "caption": "M01 原刊登照片 4（拍攝日期、現況與標的對應仍須承辦確認）"
+        "caption": "原刊登區域空拍圖；非本案廠房外觀、室內照片或已驗證地籍界址。"
       }
     ],
     "note": "source HTTP 200",
