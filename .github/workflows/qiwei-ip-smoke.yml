@@ -1,0 +1,64 @@
+name: Qiwei IP live smoke check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'qiwei-ip/**'
+      - '.github/workflows/qiwei-ip-smoke.yml'
+permissions:
+  contents: read
+concurrency:
+  group: qiwei-ip-live-smoke
+  cancel-in-progress: true
+jobs:
+  public-url:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check HTTPS page and required assets
+        shell: python
+        run: |
+          import json, os, time, urllib.request
+          from datetime import datetime, timezone
+          base = 'https://larryveryhandsome.github.io/web-design/qiwei-ip/'
+          expected = {
+              '': '其衞 IP 工作台',
+              'style.css': '.bottom-nav',
+              'seed.js': 'window.IP_SEED',
+              'app.js': '共用查看版',
+              'icon.svg': '<svg',
+              'manifest.webmanifest': 'standalone',
+          }
+          result = []
+          for path, marker in expected.items():
+              error = None
+              for attempt in range(18):
+                  try:
+                      request = urllib.request.Request(base + path + '?verify=' + os.environ['GITHUB_SHA'][:8], headers={'User-Agent': 'Qiwei-IP-deployment-smoke/1.0'})
+                      with urllib.request.urlopen(request, timeout=12) as response:
+                          code = response.status
+                          body = response.read().decode('utf-8')
+                      assert code == 200, code
+                      assert marker in body, 'Expected marker missing'
+                      if path == 'seed.js':
+                          seed = json.loads(body.removeprefix('window.IP_SEED = ').strip().removesuffix(';'))
+                          assert len(seed['content']) == 12
+                          assert len(seed['activities']) == 12
+                          assert len(seed['tasks']) == 18
+                          assert seed['content'][0]['date'] == '2026-10-12'
+                          assert seed['content'][-1]['date'] == '2026-11-06'
+                      result.append({'url': base + path, 'status': code, 'bytes': len(body.encode('utf-8'))})
+                      print('PASS', base + path, code)
+                      break
+                  except Exception as exc:
+                      error = exc
+                      time.sleep(6)
+              else:
+                  raise RuntimeError(f'Public URL check failed: {path}: {error}')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('# Qiwei IP public URL checks passed\n\n')
+              f.write('URL: ' + base + '\n\n')
+              f.write('All six required resources returned HTTP 200 and expected content. Seed has 12 shooting cards, 12 activity candidates and 18 tasks.\n\n')
+              f.write('This verifies delivery only. It does not claim Safari testing, shared editing, authentication or a cloud database.\n')
+          print(json.dumps({'verified_at': datetime.now(timezone.utc).isoformat(), 'checks': result}, ensure_ascii=False))
