@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#162923"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="其衞與一三的個人 IP 工作台。查看四週內容排程、取材企劃、審稿流程與執行任務。">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="其衞 IP">
+<title>其衞 IP 工作台 · 每個想法，都有下一步</title>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"><link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./style.css?v=1">
+<script src="./seed.js?v=1" defer></script><script src="./app.js?v=1" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<aside class="sidebar" aria-label="主選單">
+<a href="#overview" class="brand"><span class="brand-mark">Q<span>↗</span></span><span>其衞 <b>IP 工作台</b><small>IDEAS INTO EVERYDAY.</small></span></a>
+<div class="side-label">創作工作室 <span>01</span></div>
+<nav id="desktop-nav"></nav>
+<div class="side-note"><span class="micro">OUR NORTH STAR</span><p>讓對的人，<br>看見真實的你。</p><small>個人品牌 × 好夥伴 × 真實日常</small></div>
+<div class="side-team"><div class="avatar qi">衞</div><div class="avatar ys">13</div><div><strong>其衞 & 一三</strong><small>第一輪・一起把內容做出來</small></div></div>
+</aside>
+<div class="shell">
+<header class="topbar"><a class="mobile-brand" href="#overview"><span class="brand-mark">Q<span>↗</span></span><strong>其衞 IP 工作台</strong></a><div class="breadcrumb" id="breadcrumb">工作室 / 總覽</div><div class="top-actions"><button class="status-pill" data-action="settings" id="mode-pill">共用預覽</button><button class="icon-button" data-action="share" aria-label="分享工作台網址" title="分享網址" id="share-button"></button><button class="user-pill" data-action="settings" aria-label="工作台設定"><span class="avatar qi">衞</span><span class="desktop-only">其衞 × 一三</span></button></div></header>
+<div id="mode-banner" class="mode-banner" role="status"></div>
+<main id="main" tabindex="-1"></main>
+<footer class="page-footer"><span>其衞 IP 工作台 <b>MVP 0.1</b></span><span>真實取材，不補演人生。</span></footer>
+</div>
+<nav class="bottom-nav" id="bottom-nav" aria-label="手機主選單"></nav>
+<dialog id="detail-dialog" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
+<dialog id="note-dialog" aria-labelledby="note-title"><form id="note-form" class="note-form"><div class="dialog-heading"><h2 id="note-title">留下一個真實瞬間</h2><button type="button" class="icon-button" data-action="close-note" aria-label="關閉">×</button></div><p class="muted">發生了什麼？其衞怎麼判斷？下次可以拍什麼？</p><label>關聯內容<select name="contentId" id="note-content-id"></select></label><label>工作紀錄<textarea name="text" rows="6" maxlength="3000" placeholder="先記錄真實事件，不用現在就想好標題。" required></textarea></label><p class="tiny local-warning">此為本機試操作，不會傳給另一個人。請勿輸入客戶或求職者個資。</p><button type="submit" class="button primary full">儲存本機紀錄</button></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript><div class="noscript">這個工作台需要啟用 JavaScript。請使用 Safari 或 Chrome 開啟。</div></noscript>
+</body></html>
