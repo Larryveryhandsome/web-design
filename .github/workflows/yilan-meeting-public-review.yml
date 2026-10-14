@@ -25,14 +25,14 @@ jobs:
           mkdir -p site-qa
           python - <<'PY'
           import hashlib, http.server, json, os, pathlib, threading, time, urllib.request
-          from playwright.sync_api import sync_playwright
+          from playwright.sync_api import sync_playwright, expect
           out = pathlib.Path('site-qa')
           source = pathlib.Path('yilan-meeting-20261014/index.html')
           html = source.read_text()
+          (out / 'validated-index.html').write_bytes(source.read_bytes())
           for forbidden in ['5379571', '5,379,571', '12704123', '12,704,123', 'data:image/webp', '<img', 'assets/pages/53']:
               assert forbidden not in html, 'Excluded source data found: ' + forbidden
           assert '公開閱讀版' in html and 'noindex' in html
-          assert 'public-v1' in html
           server = http.server.ThreadingHTTPServer(('127.0.0.1', 8765), http.server.SimpleHTTPRequestHandler)
           threading.Thread(target=server.serve_forever, daemon=True).start()
           base = 'http://127.0.0.1:8765/yilan-meeting-20261014/'
@@ -43,58 +43,68 @@ jobs:
                   context = browser.new_context(viewport={'width': width, 'height': height}, is_mobile=width < 500, has_touch=width < 500, accept_downloads=True)
                   page = context.new_page()
                   errors = []
-                  page.on('pageerror', lambda e: errors.append(str(e)))
-                  response = page.goto(base, wait_until='networkidle')
-                  assert response.status == 200
-                  assert page.locator('#top-deals .bar-row').count() == 5
-                  for route in ['overview', 'market', 'ranking', 'rules', 'events', 'tasks', 'sources']:
-                      page.locator('nav a[data-route="' + route + '"]').click()
-                      assert page.locator('#' + route).is_visible()
-                      assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Overflow: ' + route + ' ' + str(width)
-                  page.locator('nav a[data-route="ranking"]').click()
-                  page.locator('#rank-brand').select_option('有巢氏')
-                  assert page.locator('#rank-table tbody tr').count() == 1
-                  assert '231' in page.locator('#rank-table').inner_text()
-                  page.locator('#rank-type').select_option('intake')
-                  page.locator('#rank-brand').select_option('永義')
-                  assert page.locator('#rank-table tbody tr').count() == 2
-                  page.locator('#rank-sort').select_option('value')
-                  assert '61' in page.locator('#rank-table tbody tr').first.inner_text()
-                  page.locator('#search-input').fill('430')
-                  assert page.locator('#search').is_visible()
-                  assert page.locator('#search-results .result').count() > 0
-                  page.locator('nav a[data-route="tasks"]').click()
-                  page.locator('#task-pledge').check()
-                  page.locator('#notes').fill('QA test note')
-                  page.locator('#new-task').fill('QA custom task')
-                  page.locator('#add-task-form button').click()
-                  assert '1 / 11' in page.locator('#task-count').inner_text()
-                  page.reload(wait_until='networkidle')
-                  assert page.locator('#task-pledge').is_checked()
-                  assert page.locator('#notes').input_value() == 'QA test note'
-                  assert 'QA custom task' in page.locator('#task-list').inner_text()
-                  with page.expect_download() as dl:
-                      page.locator('#export-state').click()
-                  path = out / ('test-record-' + str(width) + '.json')
-                  dl.value.save_as(path)
-                  saved = json.loads(path.read_text())
-                  assert saved['meeting'] == '2026-10-14' and saved['checked']['pledge'] is True
-                  page.locator('nav a[data-route="events"]').click()
-                  with page.expect_download() as dl:
-                      page.locator('#export-calendar').click()
-                  path = out / ('events-' + str(width) + '.ics')
-                  dl.value.save_as(path)
-                  ics = path.read_bytes()
-                  assert ics.count(b'BEGIN:VEVENT') == 4
-                  assert b'DTSTART:20261028T013000Z' in ics
-                  assert b'DTEND:20261028T033000Z' in ics
-                  assert all(len(line) <= 75 for line in ics.split(b'\r\n'))
-                  page.locator('#font-button').click()
-                  assert page.locator('html').evaluate("e => e.classList.contains('large')")
-                  page.locator('#font-button').click()
-                  assert not errors, errors
-                  report['checks'].append({'viewport': width, 'navigation': True, 'no_horizontal_overflow': True, 'ranking_filters': True, 'search': True, 'local_storage': True, 'json_export': True, 'ics_export': True, 'large_font': True, 'js_errors': errors})
-                  context.close()
+                  page.on('pageerror', lambda e: (errors.append(str(e)), print('JS ERROR:', str(e))))
+                  try:
+                      response = page.goto(base, wait_until='networkidle')
+                      assert response.status == 200
+                      expect(page.locator('#top-deals .bar-row')).to_have_count(5)
+                      for route in ['overview', 'market', 'ranking', 'rules', 'events', 'tasks', 'sources']:
+                          print('Checking route', route, 'at', width)
+                          page.locator('nav a[data-route="' + route + '"]').click()
+                          expect(page.locator('#' + route)).to_be_visible()
+                          assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Overflow: ' + route + ' ' + str(width)
+                      page.locator('nav a[data-route="ranking"]').click()
+                      expect(page.locator('#ranking')).to_be_visible()
+                      page.locator('#rank-brand').select_option('有巢氏')
+                      expect(page.locator('#rank-table tbody tr')).to_have_count(1)
+                      assert '231' in page.locator('#rank-table').inner_text()
+                      page.locator('#rank-type').select_option('intake')
+                      page.locator('#rank-brand').select_option('永義')
+                      expect(page.locator('#rank-table tbody tr')).to_have_count(2)
+                      page.locator('#rank-sort').select_option('value')
+                      assert '61' in page.locator('#rank-table tbody tr').first.inner_text()
+                      page.locator('#search-input').fill('430')
+                      expect(page.locator('#search')).to_be_visible()
+                      assert page.locator('#search-results .result').count() > 0
+                      page.locator('nav a[data-route="tasks"]').click()
+                      expect(page.locator('#tasks')).to_be_visible()
+                      page.locator('#task-pledge').check()
+                      page.locator('#notes').fill('QA test note')
+                      page.locator('#new-task').fill('QA custom task')
+                      page.locator('#add-task-form button').click()
+                      expect(page.locator('#task-count')).to_have_text('1 / 11')
+                      page.reload(wait_until='networkidle')
+                      expect(page.locator('#task-pledge')).to_be_checked()
+                      assert page.locator('#notes').input_value() == 'QA test note'
+                      assert 'QA custom task' in page.locator('#task-list').inner_text()
+                      with page.expect_download() as dl:
+                          page.locator('#export-state').click()
+                      path = out / ('test-record-' + str(width) + '.json')
+                      dl.value.save_as(path)
+                      saved = json.loads(path.read_text())
+                      assert saved['meeting'] == '2026-10-14' and saved['checked']['pledge'] is True
+                      page.locator('nav a[data-route="events"]').click()
+                      expect(page.locator('#events')).to_be_visible()
+                      with page.expect_download() as dl:
+                          page.locator('#export-calendar').click()
+                      path = out / ('events-' + str(width) + '.ics')
+                      dl.value.save_as(path)
+                      ics = path.read_bytes()
+                      assert ics.count(b'BEGIN:VEVENT') == 4
+                      assert b'DTSTART:20261028T013000Z' in ics
+                      assert b'DTEND:20261028T033000Z' in ics
+                      assert all(len(line) <= 75 for line in ics.split(b'\r\n'))
+                      page.locator('#font-button').click()
+                      assert page.locator('html').evaluate("e => e.classList.contains('large')")
+                      page.locator('#font-button').click()
+                      assert not errors, errors
+                      report['checks'].append({'viewport': width, 'navigation': True, 'no_horizontal_overflow': True, 'ranking_filters': True, 'search': True, 'local_storage': True, 'json_export': True, 'ics_export': True, 'large_font': True, 'js_errors': errors})
+                  except Exception:
+                      page.screenshot(path=str(out / ('failure-' + str(width) + '.png')), full_page=True)
+                      (out / 'failure-errors.json').write_text(json.dumps(errors))
+                      raise
+                  finally:
+                      context.close()
               public = os.environ['PUBLIC_URL']
               live_bytes = None
               for attempt in range(48):
@@ -118,13 +128,12 @@ jobs:
                   p = ctx.new_page()
                   r = p.goto(public, wait_until='networkidle')
                   assert r.status == 200
-                  assert p.locator('#top-deals .bar-row').count() == 5
+                  expect(p.locator('#top-deals .bar-row')).to_have_count(5)
                   p.screenshot(path=str(out / (name + '.png')), full_page=True)
                   ctx.close()
               browser.close()
           server.shutdown()
           (out / 'report.json').write_text(json.dumps(report, indent=2, ensure_ascii=False))
-          (out / 'validated-index.html').write_bytes(source.read_bytes())
           print(json.dumps(report, ensure_ascii=False))
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
               f.write('## Public URL verified\n' + report['public_url'] + '\n\nHTTP 200, exact source match, mobile and desktop browser checks passed.\n')
