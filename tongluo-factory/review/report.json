@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-10-15T07:34:47.697681+00:00",
+  "photos": [
+    {
+      "file": "photos/01.jpg",
+      "width": 1705,
+      "height": 959,
+      "bytes": 276215,
+      "sha256": "1cdd2b4b53216b86713c967851550b90b00429dd04c0a294fdc50365f4d80004",
+      "unchanged_original_bytes": true
+    },
+    {
+      "file": "photos/02.jpg",
+      "width": 1316,
+      "height": 817,
+      "bytes": 358086,
+      "sha256": "bb0bb05fc9e0a6b4fab5f2c960177c1df0f22ae20bb22104bf8ef24fe965703d",
+      "unchanged_original_bytes": true
+    },
+    {
+      "file": "photos/03.jpg",
+      "width": 1705,
+      "height": 959,
+      "bytes": 246153,
+      "sha256": "603e50561201577fbce0e84d73c144621743d73ef2909c60569f29e7d87b0a97",
+      "unchanged_original_bytes": true
+    },
+    {
+      "file": "photos/04.jpg",
+      "width": 1705,
+      "height": 959,
+      "bytes": 299000,
+      "sha256": "6b0c456e107a74c5780529ff1b4d8fa909eb7df530f70f6b24b98e0a83bbfb74",
+      "unchanged_original_bytes": true
+    }
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 375,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 390,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 430,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 768,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 1024,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    },
+    {
+      "width": 1440,
+      "horizontal_overflow": false,
+      "contact_bar_correct": true
+    }
+  ],
+  "checks": {
+    "original_contact_removed": true,
+    "property_data_preserved": true,
+    "contact_links_correct": true,
+    "all_four_photos_loaded": true,
+    "gallery_keyboard_close_focus_restore": true,
+    "area_photo_clearly_labeled": true,
+    "copy_line_inquiry_and_share": true,
+    "print_contact_visible": true,
+    "mobile_swipe_and_close": true,
+    "no_javascript_errors": true
+  },
+  "passed": true,
+  "javascript_errors": []
+}
