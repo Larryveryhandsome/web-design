@@ -1,0 +1,28 @@
+{
+  "url": "https://larryveryhandsome.github.io/web-design/tongluo-factory/",
+  "verified_at": "2026-10-15T07:37:09.398496+00:00",
+  "passed": true,
+  "html_http_status": 200,
+  "photos": [
+    {
+      "file": "photos/01.jpg",
+      "http_status": 200,
+      "original_bytes_verified": true
+    },
+    {
+      "file": "photos/02.jpg",
+      "http_status": 200,
+      "original_bytes_verified": true
+    },
+    {
+      "file": "photos/03.jpg",
+      "http_status": 200,
+      "original_bytes_verified": true
+    },
+    {
+      "file": "photos/04.jpg",
+      "http_status": 200,
+      "original_bytes_verified": true
+    }
+  ]
+}
