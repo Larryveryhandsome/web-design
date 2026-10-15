@@ -1,0 +1,215 @@
+name: Tongluo property photo and page review
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tongluo-factory/index.html'
+      - '.github/workflows/tongluo-factory-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tongluo-property-review
+  cancel-in-progress: false
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: |
+          pip install requests pillow playwright
+          python -m playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Preserve original photographs and check property page
+        run: |
+          cat > /tmp/tongluo_review.py <<'PY'
+          import hashlib
+          import io
+          import json
+          import threading
+          import time
+          from datetime import datetime, timezone
+          from functools import partial
+          from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+          from pathlib import Path
+          import requests
+          from PIL import Image
+          from playwright.sync_api import sync_playwright
+
+          root = Path.cwd()
+          project = root / 'tongluo-factory'
+          photos = project / 'photos'
+          review = project / 'review'
+          photos.mkdir(exist_ok=True)
+          review.mkdir(exist_ok=True)
+          sources = [
+              ('01.jpg', 'https://www.tdw.tw/uploads/image/20261007/1791366007326004.jpg', (1000, 562)),
+              ('02.jpg', 'https://www.tdw.tw/uploads/image/20261007/1791366007890723.jpg', (1000, 621)),
+              ('03.jpg', 'https://www.tdw.tw/uploads/image/20261007/1791366007880476.jpg', (1000, 562)),
+              ('04.jpg', 'https://www.tdw.tw/uploads/image/20261007/1791366007403831.jpg', (1000, 562)),
+          ]
+          report = {'generated_at': datetime.now(timezone.utc).isoformat(), 'photos': [], 'viewports': [], 'checks': {}, 'passed': False}
+          session = requests.Session()
+          session.headers.update({'User-Agent': 'Mozilla/5.0'})
+          for name, url, dimensions in sources:
+              last_error = None
+              for attempt in range(4):
+                  try:
+                      response = session.get(url, timeout=(20, 60))
+                      response.raise_for_status()
+                      original_bytes = response.content
+                      image = Image.open(io.BytesIO(original_bytes))
+                      assert image.format == 'JPEG', (name, image.format)
+                      assert image.size == dimensions, (name, image.size, dimensions)
+                      image.verify()
+                      (photos / name).write_bytes(original_bytes)
+                      report['photos'].append({'file': 'photos/' + name, 'width': dimensions[0], 'height': dimensions[1], 'bytes': len(original_bytes), 'sha256': hashlib.sha256(original_bytes).hexdigest(), 'unchanged_original_bytes': True})
+                      break
+                  except Exception as error:
+                      last_error = error
+                      if attempt == 3:
+                          raise
+                      time.sleep(2 ** attempt)
+              print('Saved original photo:', name)
+
+          page_path = project / 'index.html'
+          html = page_path.read_text(encoding='utf-8')
+          old_css = '.photo-open{padding:7px 8px;font-size:9px;bottom:16px;right:12px}'
+          new_css = '.photo-open{padding:7px 8px;font-size:9px;top:12px;bottom:auto;right:12px}'
+          if old_css in html:
+              html = html.replace(old_css, new_css, 1)
+              page_path.write_text(html, encoding='utf-8')
+          assert new_css in html, 'Expected mobile photo control adjustment'
+          for forbidden in ['何思霆', '0916006680', '0916-006-680', '永慶', '永恆', '洪子甯', '土地王', 'tdw.tw', '林其衛']:
+              assert forbidden not in html, 'Prior contact/brand remained: ' + forbidden
+          for required in ['林其衞', '0928-880-392', '0928880392', '佳慶不動產有限公司', '江鳳益', '00359', '88,550', '3,390', '5,400', '70%', '300%', 'B1–3F']:
+              assert required in html, 'Missing expected information: ' + required
+          report['checks']['original_contact_removed'] = True
+          report['checks']['property_data_preserved'] = True
+
+          class QuietHandler(SimpleHTTPRequestHandler):
+              def log_message(self, *args):
+                  pass
+          server = ThreadingHTTPServer(('127.0.0.1', 8765), partial(QuietHandler, directory=str(root)))
+          threading.Thread(target=server.serve_forever, daemon=True).start()
+          browser_errors = []
+          try:
+              with sync_playwright() as p:
+                  browser = p.chromium.launch()
+                  context = browser.new_context(viewport={'width': 1440, 'height': 1000}, device_scale_factor=1, locale='zh-TW', permissions=['clipboard-read', 'clipboard-write'])
+                  page = context.new_page()
+                  page.on('pageerror', lambda error: browser_errors.append(str(error)))
+                  url = 'http://127.0.0.1:8765/tongluo-factory/'
+                  response = page.goto(url, wait_until='networkidle')
+                  assert response.status == 200
+                  page.evaluate('document.fonts.ready')
+                  assert page.locator('.gallery img').count() == 4
+                  for image in page.locator('.gallery img').all():
+                      assert image.evaluate('(el) => el.complete && el.naturalWidth === 1000')
+                  links = page.locator('a[href^="tel:"]').evaluate_all('(els) => els.map(el => el.getAttribute("href"))')
+                  assert links and set(links) == {'tel:+886928880392'}, links
+                  line_links = page.locator('a[href^="https://line.me/"]').evaluate_all('(els) => els.map(el => el.href)')
+                  assert line_links and set(line_links) == {'https://line.me/ti/p/~0928880392'}, line_links
+                  report['checks']['contact_links_correct'] = True
+                  report['checks']['all_four_photos_loaded'] = True
+                  for width in [320, 375, 390, 430, 768, 1024, 1440]:
+                      page.set_viewport_size({'width': width, 'height': 1000})
+                      page.evaluate('window.scrollTo(0, 0)')
+                      page.wait_for_timeout(180)
+                      layout = page.evaluate('({width:innerWidth, documentWidth:document.documentElement.scrollWidth, bodyWidth:document.body.scrollWidth})')
+                      assert layout['documentWidth'] <= width + 1 and layout['bodyWidth'] <= width + 1, layout
+                      assert page.locator('.mobile-dock').is_visible() == (width <= 600)
+                      if width <= 600:
+                          caption = page.locator('.photo-caption').bounding_box()
+                          control = page.locator('.photo-open').bounding_box()
+                          overlap = min(caption['x'] + caption['width'], control['x'] + control['width']) > max(caption['x'], control['x']) and min(caption['y'] + caption['height'], control['y'] + control['height']) > max(caption['y'], control['y'])
+                          assert not overlap, ('Mobile photo caption overlap', width)
+                      report['viewports'].append({'width': width, 'horizontal_overflow': False, 'contact_bar_correct': True})
+                      if width in [390, 1440]:
+                          label = 'mobile' if width == 390 else 'desktop'
+                          page.screenshot(path=str(review / (label + '.jpg')), type='jpeg', quality=85)
+                          page.screenshot(path=str(review / (label + '-full.jpg')), type='jpeg', quality=80, full_page=True)
+                  page.locator('[data-photo="0"]').click()
+                  assert page.locator('#lightbox').evaluate('(el) => el.open')
+                  assert page.locator('#lb-counter').inner_text() == '01 / 04'
+                  for i in range(4):
+                      page.locator('[data-lb="%s"]' % i).click()
+                      expected = '/photos/%02d.jpg' % (i + 1)
+                      assert page.locator('#lb-image').get_attribute('src').endswith(expected.lstrip('/'))
+                      page.wait_for_function('document.querySelector("#lb-image").complete && document.querySelector("#lb-image").naturalWidth === 1000')
+                      if i == 1:
+                          assert '並非本案' in page.locator('#lb-note').inner_text()
+                  page.keyboard.press('ArrowRight')
+                  assert page.locator('#lb-counter').inner_text() == '01 / 04'
+                  page.keyboard.press('ArrowLeft')
+                  assert page.locator('#lb-counter').inner_text() == '04 / 04'
+                  page.keyboard.press('Escape')
+                  assert not page.locator('#lightbox').evaluate('(el) => el.open')
+                  assert page.locator('[data-photo="0"]').evaluate('(el) => el === document.activeElement')
+                  report['checks']['gallery_keyboard_close_focus_restore'] = True
+                  report['checks']['area_photo_clearly_labeled'] = True
+                  page.locator('[data-copy-line]').click()
+                  assert page.evaluate('navigator.clipboard.readText()') == '0928880392'
+                  page.locator('#copy-inquiry').click()
+                  inquiry = page.evaluate('navigator.clipboard.readText()')
+                  assert '3,390坪' in inquiry and '88,550萬元' in inquiry
+                  page.evaluate('Object.defineProperty(navigator, "share", {value:undefined, configurable:true})')
+                  page.locator('#share-bottom').click()
+                  assert page.evaluate('navigator.clipboard.readText()') == 'https://larryveryhandsome.github.io/web-design/tongluo-factory/'
+                  report['checks']['copy_line_inquiry_and_share'] = True
+                  page.emulate_media(media='print')
+                  assert not page.locator('.mobile-dock').is_visible()
+                  assert not page.locator('.nav').is_visible()
+                  assert page.locator('.advisor-phone').is_visible()
+                  report['checks']['print_contact_visible'] = True
+                  page.emulate_media(media='screen')
+                  context.close()
+                  touch = browser.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True, locale='zh-TW')
+                  mobile = touch.new_page()
+                  mobile.goto(url, wait_until='networkidle')
+                  mobile.locator('[data-photo="0"]').tap()
+                  mobile.locator('#lb-image').evaluate('''el => {
+                    const a = new Touch({identifier:1,target:el,clientX:320,clientY:200});
+                    const b = new Touch({identifier:1,target:el,clientX:100,clientY:205});
+                    el.dispatchEvent(new TouchEvent('touchstart',{touches:[a],changedTouches:[a],bubbles:true}));
+                    el.dispatchEvent(new TouchEvent('touchend',{touches:[],changedTouches:[b],bubbles:true}));
+                  }''')
+                  assert mobile.locator('#lb-counter').inner_text() == '02 / 04'
+                  mobile.locator('#lb-close').tap()
+                  assert not mobile.locator('#lightbox').evaluate('(el) => el.open')
+                  report['checks']['mobile_swipe_and_close'] = True
+                  touch.close()
+                  browser.close()
+              assert not browser_errors, browser_errors
+              report['checks']['no_javascript_errors'] = True
+              report['passed'] = True
+          finally:
+              server.shutdown()
+              report['javascript_errors'] = browser_errors
+              (review / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+              print(json.dumps(report, ensure_ascii=False, indent=2))
+          PY
+          python /tmp/tongluo_review.py
+      - name: Commit only this property page and its verified assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tongluo-factory/index.html tongluo-factory/photos tongluo-factory/review
+          if ! git diff --cached --quiet; then
+            git commit -m 'Preserve four original Tongluo photos and verify responsive property page'
+            git pull --rebase origin main
+            git push origin main
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tongluo-property-review
+          path: |
+            tongluo-factory/review
+            tongluo-factory/photos
+          retention-days: 5
