@@ -1,0 +1,62 @@
+name: Verify published Tongluo page
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tongluo-live-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  public-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify public HTML and each original image
+        run: |
+          python - <<'PY'
+          import hashlib, json, time, urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+          root = Path('tongluo-factory')
+          base = 'https://larryveryhandsome.github.io/web-design/tongluo-factory/'
+          expected = json.loads((root / 'review/report.json').read_text())
+          def get(path):
+              request = urllib.request.Request(base + path + '?verified=' + str(int(time.time())), headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  assert response.status == 200
+                  return response.read()
+          report = {'url':base,'verified_at':datetime.now(timezone.utc).isoformat(),'passed':False}
+          for attempt in range(12):
+              try:
+                  html = get('').decode('utf-8')
+                  for text in ['林其衞','0928-880-392','0928880392','photos/01.jpg','88,550','3,390','5,400']:
+                      assert text in html, text
+                  assert 'top:12px;bottom:auto;right:12px' in html
+                  results = []
+                  for photo in expected['photos']:
+                      payload = get(photo['file'])
+                      digest = hashlib.sha256(payload).hexdigest()
+                      assert digest == photo['sha256'], photo['file']
+                      results.append({'file':photo['file'],'http_status':200,'original_bytes_verified':True})
+                  report.update({'passed':True,'html_http_status':200,'photos':results,'verified_at':datetime.now(timezone.utc).isoformat()})
+                  break
+              except Exception as error:
+                  print('Waiting for public deployment:', type(error).__name__, str(error))
+                  if attempt == 11:
+                      raise
+                  time.sleep(10)
+          (root / 'review/live.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          PY
+      - name: Store public deployment verification
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tongluo-factory/review/live.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record successful public page and original-image checks'
+            git pull --rebase origin main
+            git push origin main
+          fi
